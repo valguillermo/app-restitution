@@ -19,8 +19,7 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Create icon
-        run: node create-icon.js
+
 
       - name: Install dependencies
         run: npm install
