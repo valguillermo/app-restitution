@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outil de Restitution de Produits - BUT International</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="file"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-row.three {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .product-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .product-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+
+        .product-item.checked {
+            background: #e8f5e9;
+            border-color: #28a745;
+        }
+
+        .product-item.disabled {
+            background: #f5f5f5;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .product-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .product-header input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .product-info {
+            flex: 1;
+        }
+
+        .product-designation {
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+
+        .product-sku {
+            font-size: 12px;
+            color: #666;
+            margin-top: 3px;
+        }
+
+        .product-category {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+
+        .product-details {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .product-item.checked .product-details {
+            display: block;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-footer {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .modal-footer button {
+            margin-left: 10px;
+        }
+
+        .product-list {
+            max-height: 600px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            background: white;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            color: #666;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .summary-table th,
+        .summary-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .summary-table th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .summary-table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .file-info {
+            padding: 10px;
+            background: #e8f4f8;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            background: #f0f0f0;
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: #e8f5e9;
+            border-color: #28a745;
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row.three {
+                grid-template-columns: 1fr;
+            }
+
+            .content {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚚 Outil de Restitution de Produits</h1>
+            <p>BUT International - Gestion des retours de produits loués (Version 1.0.0)</p>
+        </div>
+
+        <div class="content">
+            <!-- Navigation Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('identification')">1. Identification</button>
+                <button class="tab-btn" onclick="switchTab('restitution')">2. Enregistrer les retours</button>
+                <button class="tab-btn" onclick="switchTab('export')">3. Exporter les données</button>
+                <button class="tab-btn" onclick="showAdminLogin()">⚙️ Admin</button>
+            </div>
+
+            <!-- Tab 1: Identification -->
+            <div id="identification" class="tab-content active">
+                <div id="fileStatusAlert" class="section" style="display: none;">
+                    <div class="alert alert-success">
+                        ✅ Fichier chargé et prêt!<br>
+                        <strong id="fileStatusAlertText"></strong>
+                    </div>
+                </div>
+
+                <div id="noFileAlert" class="section" style="display: none;">
+                    <div class="alert alert-danger">
+                        ⚠️ Aucun fichier chargé<br>
+                        L'administrateur doit charger un fichier Excel avant de commencer les enregistrements.
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>📋 Identification du Transporteur</h2>
+                    <div class="form-row three">
+                        <div class="form-group">
+                            <label for="nom">Nom</label>
+                            <input type="text" id="nom" placeholder="Votre nom" onchange="saveTransporter()">
+                        </div>
+                        <div class="form-group">
+                            <label for="prenom">Prénom</label>
+                            <input type="text" id="prenom" placeholder="Votre prénom" onchange="saveTransporter()">
+                        </div>
+                        <div class="form-group">
+                            <label for="societe">Nom de la société</label>
+                            <input type="text" id="societe" placeholder="Nom de votre entreprise" onchange="saveTransporter()">
+                        </div>
+                    </div>
+                    <button class="btn" onclick="switchTab('restitution')">Continuer →</button>
+                </div>
+            </div>
+
+            <!-- Tab 2 (hidden): Admin Panel -->
+            <div id="admin" class="tab-content">
+                <div class="section">
+                    <h2>⚙️ Panneau d'Administration</h2>
+
+                    <div class="alert alert-info">
+                        <strong>Fichier actuellement chargé:</strong>
+                        <div id="currentFileInfo" style="margin-top: 10px;">Aucun fichier chargé</div>
+                    </div>
+
+                    <h3 style="margin: 20px 0 15px 0; color: #667eea;">Charger un nouveau fichier</h3>
+                    <p style="margin-bottom: 15px; color: #666;">Format attendu : <strong>reporting_but_fin_de_contrat_T[X]_[ANNÉE].xlsx</strong></p>
+
+                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                        <div class="upload-icon">📄</div>
+                        <p><strong>Cliquez pour sélectionner un fichier</strong></p>
+                        <p style="font-size: 12px; color: #999; margin-top: 5px;">ou glissez-déposez le fichier</p>
+                    </div>
+
+                    <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;" onchange="loadFile(event)">
+
+                    <div id="fileStatus" class="hidden" style="margin-top: 20px;">
+                        <div class="file-info" id="fileInfo"></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                        <strong>⚠️ Attention:</strong> Charger un nouveau fichier réinitialisera les données de restitution déjà enregistrées par les transporteurs. Assurez-vous d'avoir exporté les données avant de charger un nouveau fichier.
+                    </div>
+
+                    <button class="btn btn-danger" style="margin-top: 20px;" onclick="exportBeforeNewFile()">
+                        📥 Exporter avant de charger un nouveau fichier
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab 3: Enregistrer les retours -->
+            <div id="restitution" class="tab-content">
+                <div class="section">
+                    <h2>📦 Enregistrer les retours</h2>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="clientSelect">Sélectionnez le client</label>
+                            <select id="clientSelect" onchange="loadClientProducts()">
+                                <option value="">-- Choisir un client --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="oplSearch">Ou chercher par n° OPL</label>
+                            <input type="text" id="oplSearch" placeholder="Numéro OPL" onkeyup="searchByOPL()">
+                        </div>
+                    </div>
+
+                    <div id="clientDetails" class="hidden">
+                        <div class="alert alert-info">
+                            <strong>Client sélectionné:</strong> <span id="clientInfoDisplay"></span>
+                        </div>
+
+                        <h3 style="margin: 20px 0 15px 0; color: #667eea;">Produits à restituer</h3>
+                        <div class="product-list" id="productsList"></div>
+
+                        <div style="margin-top: 30px; padding: 20px; background: #f0f0f0; border-radius: 8px;">
+                            <h4 style="color: #333; margin-bottom: 15px;">📋 Résumé de la restitution</h4>
+                            <table class="summary-table" id="restitutionSummary">
+                                <tr>
+                                    <td>Produits cochés:</td>
+                                    <td><strong id="checkedCount">0</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Produits non cochés:</td>
+                                    <td><strong id="uncheckedCount">0</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Total:</td>
+                                    <td><strong id="totalCount">0</strong></td>
+                                </tr>
+                            </table>
+
+                            <button class="btn btn-success" onclick="validateRestitution()" style="margin-top: 20px; width: 100%;">
+                                ✅ Valider la restitution
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Export -->
+            <div id="export" class="tab-content">
+                <div class="section">
+                    <h2>📊 Exporter les données</h2>
+
+                    <div class="alert alert-info">
+                        <p><strong>Résumé des données enregistrées:</strong></p>
+                        <p>Cliquez sur le bouton ci-dessous pour générer un fichier Excel avec tous les enregistrements.</p>
+                    </div>
+
+                    <div id="exportSummary"></div>
+
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-success" onclick="exportToExcel()">
+                            📥 Télécharger le fichier Excel
+                        </button>
+                        <button class="btn btn-secondary" style="margin-left: 10px;" onclick="clearAllData()">
+                            🔄 Réinitialiser les données
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de validation -->
+    <div id="validationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">✅ Confirmation de la restitution</div>
+
+            <div class="alert alert-success">
+                Vérifiez les informations ci-dessous avant de valider définitivement la restitution.
+            </div>
+
+            <div style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 15px; margin-bottom: 20px;">
+                <table class="summary-table" id="validationTable">
+                </table>
+            </div>
+
+            <div style="padding: 15px; background: #f9f9f9; border-radius: 4px; margin-bottom: 20px;">
+                <strong>Transporteur:</strong> <span id="validationTransporter"></span><br>
+                <strong>Date/Heure:</strong> <span id="validationDateTime"></span>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeValidationModal()">Annuler</button>
+                <button class="btn btn-success" onclick="confirmRestitution()">Valider et enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de login Admin -->
+    <div id="adminLoginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">🔐 Accès Administration</div>
+
+            <div class="alert alert-info">
+                Entrez le mot de passe pour accéder à la section administration.
+            </div>
+
+            <div class="form-group">
+                <label for="adminPassword">Mot de passe</label>
+                <input type="password" id="adminPassword" placeholder="Mot de passe"
+                       onkeypress="if(event.key === 'Enter') verifyAdminPassword()">
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAdminLogin()">Annuler</button>
+                <button class="btn btn-success" onclick="verifyAdminPassword()">Valider</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour les détails du produit -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalTitle"></div>
+
+            <div class="form-group">
+                <label for="gradeSelect">Grade du produit</label>
+                <select id="gradeSelect" onchange="updateProductData(); toggleMotifSection()">
+                    <option value="">-- Sélectionner un grade --</option>
+                    <option value="A">Grade A - Parfait état / Comme neuf</option>
+                    <option value="B">Grade B - Bon état / Usure normale</option>
+                    <option value="C">Grade C - Dégradé mais réparable</option>
+                    <option value="D">Grade D - Dégradé et irréparable</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="motifGroup">
+                <label for="motifSelect">Motif</label>
+                <select id="motifSelect" onchange="updateProductData()">
+                    <option value="">-- Sélectionner un motif --</option>
+                    <option value="Rayures">Rayures</option>
+                    <option value="Rouille">Rouille</option>
+                    <option value="Ne s'allume pas">Ne s'allume pas</option>
+                    <option value="S'allume mais ne fonctionne pas">S'allume mais ne fonctionne pas</option>
+                    <option value="S'allume mais écran défectueux">S'allume mais écran défectueux (TV)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="photosUpload">Ajouter des photos</label>
+                <input type="file" id="photosUpload" accept="image/*" multiple onchange="handlePhotoUpload()">
+                <div id="photosList" style="margin-top: 10px;"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeProductModal()">Fermer</button>
+                <button class="btn btn-success" onclick="saveProductData()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

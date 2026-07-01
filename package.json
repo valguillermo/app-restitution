@@ -1,0 +1,61 @@
+{
+  "name": "app-restitution-produits",
+  "version": "1.0.0",
+  "description": "Outil de restitution de produits loués - BUT International",
+  "main": "main.js",
+  "homepage": "./",
+  "author": "BUT International",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "dist": "electron-builder --publish never"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "electron": "^latest",
+    "electron-builder": "^latest"
+  },
+  "build": {
+    "appId": "com.but.restitution",
+    "productName": "Outil de Restitution BUT",
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "app.js",
+      "icon.ico",
+      "node_modules/xlsx/dist/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Outil de Restitution BUT"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}.exe"
+    }
+  }
+}
+
